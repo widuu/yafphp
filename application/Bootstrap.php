@@ -36,6 +36,16 @@ class Bootstrap extends Yaf\Bootstrap_Abstract{
 	}
 
 	/**
+     * Initialization the routes
+     * @author widuu <admin@widuu.com>
+	 */
+
+	public function _initRoute(Yaf\Dispatcher $dispatcher) {
+        $router = Yaf\Dispatcher::getInstance()->getRouter();
+        $router->addConfig(Yaf\Registry::get("config")->routes);
+    }
+
+	/**
      * Initialization the local class
      * @author widuu <admin@widuu.com>
 	 */

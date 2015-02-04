@@ -16,4 +16,5 @@ if(!extension_loaded("yaf")) die('Not Install Yaf');
 define('APP_PATH',realpath(dirname(__FILE__)));
 //实例化Yaf
 $app = new Yaf\Application(APP_PATH."/conf/application.ini",ini_get('yaf.environ'));
+//加载引导程序Bootstrap.php
 $app->bootstrap()->run();

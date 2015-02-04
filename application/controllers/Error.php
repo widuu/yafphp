@@ -1,18 +1,26 @@
 <?php
 
-class ErrorController extends Yaf\Controller_Abstract{
+// +----------------------------------------------------------------------
+// | Yaf 错误提示
+// +----------------------------------------------------------------------
+// | Copyright (c) 2015-2016 http://www.widuu.com All rights reserved.
+// +----------------------------------------------------------------------
+// | Author: widuu <admin@widuu.com>
+// +----------------------------------------------------------------------
+// | Time  : 2015/2/4
+// +----------------------------------------------------------------------
 
+class ErrorController extends Yaf\Controller_Abstract{
+	
+	/**
+	 * 错误异常提示
+	 * @author <admin@widuu.com>
+	 */
+	
 	public function errorAction($exception){
-		 
-		 $exception = $this->getRequest()->getException();
-		 
-		 try {
-		    	throw $exception;
-		  } catch (Yaf_Exception_LoadFailed $e) {
-		  	var_dump($e);
-		    	echo "加载失败".$e->getMessage();
-		  } catch (Yaf_Exception $e) {
-		    	echo "异常".$e->getMessage();
-		  }
+		$this->getView()->assign("file", $exception->getFile());
+      	$this->getView()->assign("line", $exception->getLine());
+		$this->getView()->assign("code", $exception->getCode());
+      	$this->getView()->assign("message", $exception->getMessage());
 	}
 }
