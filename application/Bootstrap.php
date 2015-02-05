@@ -24,6 +24,11 @@ class Bootstrap extends Yaf\Bootstrap_Abstract{
 		if(file_exists($commonFile)){
 			require_once $commonFile;
 		}
+		//加载语言包
+		$langFile   = APP_PATH."/lang/zh_cn.php";
+		if(file_exists($langFile)){
+			Lang(include $langFile);
+		}
 	}
 
 	/**

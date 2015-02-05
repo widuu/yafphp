@@ -7,33 +7,47 @@
 // +----------------------------------------------------------------------
 // | Author: widuu 
 // +----------------------------------------------------------------------
-// | Time  : 2015/2/4
+// | Time  : 2015/2/5
 // +----------------------------------------------------------------------
 
 /**
- * PDO数据库操作
+ * 数据库中间插件
  */
 
+abstract class Driver{
+	// PDO操作实例
+    protected $PDOStatement = null;
+    // 当前操作所属的模型名
+    protected $model      = '';
+    // 当前SQL指令
+    protected $queryStr   = '';
 
-class Db_Pdo extends Driver{
-
-	/**
+    // 最后插入ID
+    protected $lastInsID  = null;
+    // 返回或者影响记录数
+    protected $numRows    = 0;
+    // 事务指令数
+    protected $transTimes = 0;
+    // 错误信息
+    protected $error      = '';
+    // 数据库连接ID 支持多个连接
+    protected $linkID     = array();
+    // 当前连接ID
+    protected $_linkID    = null;
+    
+    /**
      * 数据库连接方法
      * @access public
      */
 
-    public function connect(){
-
-    }
+    abstract public function connect();
 
     /**
      * 释放查询结果
      * @access public
      */
 
-    public function free(){
-
-    }
+    abstract public function free();
 
     /**
      * 启动事务
@@ -41,9 +55,7 @@ class Db_Pdo extends Driver{
      * @return void
      */
 
-    public function startTrans(){
-
-    }
+    abstract public function startTrans();
 
     /**
      * 事务回滚
@@ -51,10 +63,15 @@ class Db_Pdo extends Driver{
      * @return boolean
      */
 
-    public function rollback(){
+    abstract public function rollback();
 
-    }
 
+    /**
+     * 析构方法
+     * @access public
+     */
+
+    abstract public function __destruct();
 
     /**
      * 关闭数据库
@@ -75,14 +92,4 @@ class Db_Pdo extends Driver{
     public function escapeString($str) {
         return addslashes($str);
     }
-
-    /**
-     * 析构方法
-     * @access public
-     */
-
-    public function __destruct(){
-
-    }
-
 }

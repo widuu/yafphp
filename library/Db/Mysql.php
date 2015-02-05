@@ -11,11 +11,11 @@
 // +----------------------------------------------------------------------
 
 /**
- * PDO数据库操作
+ * Mysql数据操作
  */
 
 
-class Db_Pdo extends Driver{
+class Db_Mysql extends Driver{
 
 	/**
      * 数据库连接方法

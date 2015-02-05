@@ -53,6 +53,6 @@ class Register{
      */
 
 	public static function _unset($alisa){
-		unset(self::$mode[$alisa]);
+		unset(self::$model[$alisa]);
 	}
 }

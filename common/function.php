@@ -8,6 +8,7 @@
  * @param boolean $strict 是否严谨 默认为true
  * @return void|string
  */
+
 function dump($var, $echo=true, $label=null, $strict=true) {
     $label = ($label === null) ? '' : rtrim($label) . ' ';
     if (!$strict) {
@@ -31,4 +32,25 @@ function dump($var, $echo=true, $label=null, $strict=true) {
         return null;
     }else
         return $output;
+}
+
+
+function Lang($name=''){
+    static $_lang = array();
+    
+    if(empty($name)){
+        return $_lang;
+    }
+
+    if(is_string($name)){
+        return empty($_lang[$name])?'Language pack undefined':$_lang[$name];
+    }
+    //定义语言包
+    if(is_array($name)){
+        $_lang = array_merge($_lang,$name);
+    }
+}
+
+function Error($message,$code='1000'){
+    throw new Yaf\Exception($message,$code);
 }
