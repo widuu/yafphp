@@ -18,5 +18,7 @@ return array(
 		'_NO_DB_TYPE_'           => '没有定义数据库类型',
 		'_NO_DB_CONFIG_'         => '没有定义数据库配置',
 		'_NO_DB_DRIVER_'		 => '数据库驱动不存在',
+		'_NO_DB_DATABASE_'		 =>	'表未定义',
 		'_MODULE_NOT_EXIST_'     => '无法加载模块',
+		'_METHOD_NOT_EXIST_'	 => '方法不存在',
 	);

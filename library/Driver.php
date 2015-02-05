@@ -34,7 +34,13 @@ abstract class Driver{
     protected $linkID     = array();
     // 当前连接ID
     protected $_linkID    = null;
-    
+    // 数据库配置
+    protected $config	  = array();
+
+  	protected $bind		  = array();
+  	//查询表达式
+  	protected $selectSql  = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%%LIMIT% %UNION%%LOCK%%COMMENT%';
+
     /**
      * 数据库连接方法
      * @access public
