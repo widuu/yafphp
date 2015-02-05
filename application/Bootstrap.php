@@ -20,6 +20,7 @@ class Bootstrap extends Yaf\Bootstrap_Abstract{
 
 	public function _initCommon(){
 		$commonFile = APP_PATH."/common/function.php";
+		//加载公共函数库
 		if(file_exists($commonFile)){
 			require_once $commonFile;
 		}
@@ -31,6 +32,7 @@ class Bootstrap extends Yaf\Bootstrap_Abstract{
 	 */
 
 	public function _initConfig(){
+		//注册配置文件
 		 $config = Yaf\Application::app()->getConfig();
          Yaf\Registry::set("config", $config);
 	}
@@ -41,6 +43,7 @@ class Bootstrap extends Yaf\Bootstrap_Abstract{
 	 */
 
 	public function _initRoute(Yaf\Dispatcher $dispatcher) {
+		//注册路由
         $router = Yaf\Dispatcher::getInstance()->getRouter();
         $router->addConfig(Yaf\Registry::get("config")->routes);
     }
@@ -51,6 +54,7 @@ class Bootstrap extends Yaf\Bootstrap_Abstract{
 	 */
 
     public function _initLoader(){
+    	//注册本地类库
     	Yaf\Loader::getInstance()->registerLocalNamespace(array("Db"));
     }
 }
