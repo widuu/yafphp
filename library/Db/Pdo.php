@@ -25,7 +25,18 @@ class Db_Pdo extends Driver{
 	        PDO::ATTR_STRINGIFY_FETCHES =>  false,
 		);
 
+    // sql语句
+    private $sql = '';
+    // 语句拼装
+    private $parts = array();
+    
+    //解析数组
+    private $_partsInit = array('distinct','field','union','table','where','group','having','order','limit','offset','lock');
+
+    public  $truetable;
+
 	public function __construct($config){
+        $this->_checkRequiredOptions($config);
 		$this->config = $config;
 	}
 
@@ -52,6 +63,23 @@ class Db_Pdo extends Driver{
     	return $this->linkID[$linkNum];
     }
 
+    /**
+     * 监测配置文件
+     * @access public
+     */
+ 
+    private function _checkRequiredOptions($config){
+        if( !array_key_exists("database", $config) ){
+            Error(Lang('_NO_DB_DBNAME_'));
+        }
+        if( !array_key_exists("username", $config) ){
+            Error(Lang('_NO_DB_NOUSER_'));
+        }
+        if( !array_key_exists("password", $config) ){
+            Error(Lang('_NO_DB_PASSWD_'));
+        }
+    }
+
 	/**
      * 数据库初始化方法
      * @access public
@@ -62,35 +90,6 @@ class Db_Pdo extends Driver{
 		 //判断数据库资源是否存在，不存在连接
 		 if ( !$this->_linkID ) $this->_linkID = $this->connect();
 	}
-
-    /**
-     * 释放查询结果
-     * @access public
-     */
-
-    public function free(){
-    	$this->PDOStatement = null;
-    }
-
-    /**
-     * 启动事务
-     * @access public
-     * @return void
-     */
-
-    public function startTrans(){
-
-    }
-
-    /**
-     * 事务回滚
-     * @access public
-     * @return boolean
-     */
-
-    public function rollback(){
-
-    }
 
     /**
      * 数据库初始化方法
@@ -144,156 +143,203 @@ class Db_Pdo extends Driver{
      * @return mixed
      */
     
-    public function select($options=array()) {
-    	$sql = $this->buildSql($options);
-    	echo $sql;
-    	dump($this->query($sql));
-    }
-
-    public function buildSql($options){
-    	 $sql   = str_replace(
-            			array('%TABLE%','%DISTINCT%','%FIELD%','%JOIN%','%WHERE%','%GROUP%','%HAVING%','%ORDER%','%LIMIT%','%UNION%','%LOCK%','%COMMENT%','%FORCE%'),
-            			array(
-            				$this->parseTable($options['table']),
-            				$this->parseDistinct(isset($options['distinct']) ? true : false),
-            				$this->parseField($options['field']),
-            				$this->parseJoin(!empty($options['join'])?$options['join']:''),
-            		     	$this->parseWhere(!empty($options['where']) ? $options['where'] : ''),
-            		     	$this->parseGroup(!empty($options['group'])?$options['group']:''),
-			                $this->parseHaving(!empty($options['having'])?$options['having']:''),
-			                $this->parseOrder(!empty($options['order'])?$options['order']:''),
-			                $this->parseLimit(!empty($options['limit'])?$options['limit']:''),
-			                $this->parseUnion(!empty($options['union'])?$options['union']:''),
-			                $this->parseLock(isset($options['lock'])?$options['lock']:false),
-			                $this->parseComment(!empty($options['comment'])?$options['comment']:''),
-			                $this->parseForce(!empty($options['force'])?$options['force']:'')
-            				),
-            			$this->selectSql);
-        return $sql;
+    public function select() {
+        $sql = $this->selectSql();
+        $this->query($sql);
+        return $this->getAll();
     }
 
     /**
-     * 解析数据表
+     * 解析where参数
      * @access public
-     * @param string $table  表名称
+     * @param  array  $where      参数
      */
 
-    private function parseTable($table){
-    	if(empty($table)) Error(Lang('_NO_DB_DATABASE_'),1006);
-    	return $table;
-    }
-
-    /**
-     * 解析数据表
-     * @access public
-     * @param string $table  表名称
-     */
-
-    private function parseDistinct($distinct){
-    	return !$distinct ? ' DISTINCT ': '';
-    }
-
-    private function parseField($fields){
-    	if('' == $fields) {
-            $fields = '*';
+    public function where($where) {
+        if(empty($where)){
+            return $where;
         }
-        return $fields;
-    }
 
-    private function parseLimit($limit) {
-        return !empty($limit)?   ' LIMIT '.$limit.' ':'';
-    }
+        if(!is_array($where)){
+            $where = array($where);
+        }
 
-    private function parseUnion($union){
-
-    }
-
-    private function parseJoin($join){
-
-    }
-
-    private function parseWhere($where){
-    	if(!empty($where) && is_string($where)){
-   			$where = ' WHERE '.$where;
-    	}
-    	return $where;
-    }
-
-    /**
-     * 设置锁机制
-     * @access protected
-     * @return string
-     */
-
-    protected function parseLock($lock=false) {
-        return $lock?   ' FOR UPDATE '  :   '';
-    }
-
-    /**
-     * index分析，可在操作链中指定需要强制使用的索引
-     * @access protected
-     * @param mixed $index
-     * @return string
-     */
-
-    protected function parseForce($index) {
-        if(empty($index)) return '';
-        if(is_array($index)) $index = join(",", $index);
-        return sprintf(" FORCE INDEX ( %s ) ", $index);
-    }
-
-    /**
-     * group分析
-     * @access protected
-     * @param mixed $group
-     * @return string
-     */
-    
-    protected function parseGroup($group) {
-        return !empty($group)? ' GROUP BY '.$group:'';
+        foreach ($where as $key => &$val) {
+            if(is_numeric($key)){
+                $val = (string)$val;
+            }else{
+                $val = $this->_where($key, $val);
+            }
+            $val = '(' . $val . ')';
+        }
+        $where = implode(' AND ', $where);
+        $this->parts['where'] = ' WHERE '.$where;
     }
     
     /**
-     * having分析
-     * @access protected
-     * @param string $having
-     * @return string
+     * 解析where特殊参数
+     * @access public
+     * @param  array  $bind      参数
      */
-    
-    protected function parseHaving($having) {
-        return  !empty($having)?   ' HAVING '.$having:'';
-    }
-    
-    /**
-     * comment分析
-     * @access protected
-     * @param string $comment
-     * @return string
-     */
-   
-    protected function parseComment($comment) {
-        return  !empty($comment)?   ' /* '.$comment.' */':'';
+
+    private function _where($key,$val){
+        if(!is_array($val)){
+            return "$key  = ".$this->_quote($val);
+        }else{
+            
+            switch (strtolower($val[0])) {
+                case 'eq':
+                    return "$key  = ".$this->_quote($val[1]);
+                    break;
+                case 'neq':
+                    return "$key  != ".$this->_quote($val[1]);
+                    break;
+                case 'gt':
+                    return "$key  > ".$this->_quote($val[1]);
+                    break;
+                case 'egt':
+                    return "$key  >= ".$this->_quote($val[1]);
+                    break;
+                case 'lt':
+                    return "$key  < ".$this->_quote($val[1]);
+                    break;
+                case 'elt':
+                    return "$key  <= ".$this->_quote($val[1]);
+                    break;
+                case 'in':
+                    return "$key IN (".$this->_quote($val[1]).")";
+                    break;
+                case 'not in':
+                    return "$key NOT IN (".$this->_quote($val[1]).")";
+                    break;
+                 case 'in':
+                    return "$key IN (".$this->_quote($val[1]).")";
+                    break;                                 
+            }
+        }
     }
 
     /**
-     * Order分析
-     * @access protected
-     * @param string $comment
-     * @return string
+     * 解析distinct参数
+     * @access public
+     * @param  array  $bind      参数
      */
 
-    protected function parseOrder($order) {
-        return  !empty($order)?   ' order by '.$order.'':'';
+    public function distinct(){
+        $this->parts['distinct'] = ' distinct ';
     }
 
+    /**
+     * 解析field参数
+     * @access public
+     * @param  array  $bind      参数
+     */
+
+    public function field($fields){
+        if(is_string($fields)){
+            $this->parts['field'] =' '.(string)$fields.' ';
+        }
+        if(is_array($fields)){
+             $this->parts['field'] = ' '.implode($fields, ',').' ';
+        }
+    }
+
+    /**
+     * 解析order方法
+     * @access public
+     * @param  array  $bind      参数
+     */
+
+    public function order($order){
+        $val = '';
+        if (preg_match('/(.*\W)(ASC|DESC)\b/si', $order, $matches)) {
+            $val = trim($matches[1]);
+            $direction = $matches[2];
+        }else{
+            $direction = 'ASC';
+        }
+        if(empty($val)) $val = $order;
+        $this->parts['order'] = " ORDER BY $val $direction";
+    }
+
+    /**
+     * 安全过滤
+     * @access public
+     * @param  array  $bind      参数
+     */
+
+    private function _quote($value)
+    {
+        if (is_int($value)) {
+            return $value;
+        } elseif (is_float($value)) {
+            return sprintf('%F', $value);
+        }
+        return "'" . addcslashes($value, "\000\n\r\\'\"\032") . "'";
+    }
+
+    /**
+     * 解析limit方法
+     * @access public
+     * @param  array  $bind      参数
+     */
+
+    public function limit($count,$offset=0) {
+        $count = intval($count);
+        if ($count <= 0) {
+            Error("limit argument  is not valid");
+        }
+        $offset = intval($offset);
+
+        if( $offset < 0 ){
+            Error("offset argument  is not valid");
+        }
+
+        $this->parts['limit'] = " Limit $count";
+
+        if( $offset>0 ){
+            $this->parts['offset'] = " OFFSET $offset";
+        }
+
+    }
+
+    /**
+     * 获取table表
+     * @access public
+     * @param  array  $bind      参数
+     */
+
+    public function getTable(){
+        if(empty($this->truetable)) Error();
+        $this->parts['table'] = " FROM $this->truetable ";
+    }
+
+    /**
+     * 解析select语句
+     * @access public
+     * @param  array  $bind      参数
+     */
+
+    private function selectSql(){
+        $this->getTable();
+        if(empty($this->parts)){
+            return false;
+        }
+        $SQL = "SELECT ";
+        foreach ($this->_partsInit as $parts) {
+            if(isset($this->parts[$parts])){
+                $SQL .= $this->parts[$parts];
+            }
+        }
+        return $SQL;
+    }
 
 
 	/**
-     * 执行查询 返回数据集
+     * 执行查询 
      * @access public
-     * @param string $str  sql指令
-     * @param boolean $fetchSql  不执行只是获取SQL
-     * @return mixed
+     * @param  string    $str  sql指令
+     * @param  boolean   $bind 执行参数
      */
 
 	public function query($sql,$bind=array()){
@@ -311,11 +357,22 @@ class Db_Pdo extends Driver{
         if(!empty($bind)) $this->bindSql($bind,$sql); 
         //执行预处理语句
         $this->PDOStatement->execute();
-        //返回结果集
-        $result =   $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
+	}
+
+    /**
+     * 获取结果集
+     * @access public
+     * @param  array  $bind      参数
+     */
+
+    public function getAll(){
+        if($this->PDOStatement == NULL){
+            return false;
+        }
+        $result = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
         $this->numRows = count( $result );
         return $result;
-	}
+    }
 
 	/**
      * 解析参数绑定
@@ -356,6 +413,35 @@ class Db_Pdo extends Driver{
 		}
 		Error($this->error,$errorCode);
 	}
+
+    /**
+     * 释放查询结果
+     * @access public
+     */
+
+    public function free(){
+        $this->PDOStatement = null;
+    }
+
+    /**
+     * 启动事务
+     * @access public
+     * @return void
+     */
+
+    public function startTrans(){
+
+    }
+
+    /**
+     * 事务回滚
+     * @access public
+     * @return boolean
+     */
+
+    public function rollback(){
+
+    }
 
     /**
      * 关闭数据库

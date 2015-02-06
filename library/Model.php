@@ -48,6 +48,7 @@ class Model{
 		$this->tableName = $prefix.strtolower(ltrim($this->tableName,$prefix));
 		//切换数据库连接
 		$this->link(0,empty($this->config)?$config:$this->config,true);
+		$this->db->truetable = $this->tableName;
 	}
 
 	/**
@@ -79,36 +80,29 @@ class Model{
      */
 
 	public function findOne(){
-		$this->options['table'] = $this->tableName;
-		$this->options['limit'] = 1;
-		$this->db->select($this->options);
-		//$result = $this->db->query("select * from tt_user where id > :id and username= :username",array(':id'=>1,':username'=>'xiaowei'));
-		//dump($result);
+		$this->db->limit(1);
+		$result = $this->db->select();
+		return $result;
 	}
 
-	 /**
+	/**
      * 指定当前的数据表
      * @access public
      * @param mixed $table
      * @return Model
      */
 
-    public function table($table) {
+    public function table($table='') {
         $prefix =   $this->prefix;
-     	if(is_string($table) && !empty($table)) $this->options['table'] = $prefix.$table;
+     	if(is_string($table) && !empty($table)){
+     		if(stristr($table,$prefix)){
+     			$this->db->truetable = $table;
+     		}else{
+     			$this->db->truetable = $prefix.$table;
+     		}
+     	}
         return $this;
     }
-
-	/**
-     * 查询一条数据
-     * @access public
-     * @return result
-     */
-
-	public function where($where){
-		$this->options['where'] = $where;
-		return $this;
-	}
 
 	/**
      * 使用__call方法实现连贯操作
@@ -117,13 +111,10 @@ class Model{
      */
 
 	public function __call($method,$args){
-		if(in_array(strtolower($method),$this->method)){
-			if(strtolower($method) == 'distinct'){
-				$this->options[strtolower($method)] = '';
-			}else{
-				$this->options[strtolower($method)] = $args[0];
-			}
-			
+		$options = strtolower($method);
+		if(in_array($options,$this->method)){
+			if(empty($args[0])) $args[0] ='';
+			$this->db->$options($args[0]);
 			return $this;
 		}else{
 			Error(Lang('_METHOD_NOT_EXIST_'),1005);

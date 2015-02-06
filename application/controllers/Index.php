@@ -15,8 +15,9 @@ class IndexController extends Yaf\Controller_Abstract{
 	public function indexAction(){
 		$this->_view->title = "YAF测试首页";
 		$model = new UserModel();
-		$map['id'] = 1;
 		$map['username'] = 'xiaowei';
-		$model->distinct()->field('username,password')->where("username = 'xiaowei'")->order('id desc')->findOne();
+		$map['id'] = array('gt',1);
+		$result = $model->field('username,password')->where($map)->order('id')->findOne();
+		dump($result);
 	}
 }
