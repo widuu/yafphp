@@ -26,12 +26,12 @@ class Model{
 	// 查询选项
 	protected $options   = array();
 	// __call查询方法
-	protected $method    = array('distinct','field','join','where','group','having','order','limit','union','lock','comment','force');
+	protected $method    = array('distinct','field','join','where','group','having','order','limit','union','lock','force');
 	// 数据表前缀
 	protected $prefix 	 = '';
 
 	public function __construct($tableName='',$config=''){
-		//初始化方法
+		// 用于Model初始化方法
 		$this->_init();
 		//获取数据库配置
 		if(is_string($config) || empty($config)) {
@@ -81,6 +81,17 @@ class Model{
 
 	public function findOne(){
 		$this->db->limit(1);
+		$result = $this->db->select();
+		return $result;
+	}
+
+	/**
+     * 返回所有的结果集
+     * @access public
+     * @return result
+     */
+
+	public function findOne(){
 		$result = $this->db->select();
 		return $result;
 	}

@@ -38,8 +38,7 @@ abstract class Driver{
     protected $config	  = array();
 
   	protected $bind		  = array();
-  	//查询表达式
-  	protected $selectSql  = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%%LIMIT% %UNION%%LOCK%%COMMENT%';
+
 
     /**
      * 数据库连接方法
@@ -89,13 +88,19 @@ abstract class Driver{
     }
 
     /**
-     * SQL指令安全过滤
+     * 安全过滤
      * @access public
-     * @param string $str  SQL字符串
-     * @return string
+     * @param  array  $bind      参数
      */
 
-    public function escapeString($str) {
-        return addslashes($str);
+    private function _quote($value)
+    {
+        if (is_int($value)) {
+            return $value;
+        } elseif (is_float($value)) {
+            return sprintf('%F', $value);
+        }
+        return "'" . addcslashes($value, "\000\n\r\\'\"\032") . "'";
     }
+    
 }

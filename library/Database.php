@@ -33,7 +33,9 @@ class DataBase{
 		if(!isset(self::$instance[$key])){
 			//判断配置类型是否存在
 			if(empty($config['type'])) Error(Lang('_NO_DB_TYPE_'),1002);
+			// 查找是否存在
 			$class  = "Db_".ucfirst($config['type']);
+			// 实例化
 			if(class_exists($class)){
 				 self::$instance[$key]   =   new $class($config);
 			}else{

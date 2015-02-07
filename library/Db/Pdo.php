@@ -24,18 +24,17 @@ class Db_Pdo extends Driver{
 	        PDO::ATTR_ORACLE_NULLS      =>  PDO::NULL_NATURAL,
 	        PDO::ATTR_STRINGIFY_FETCHES =>  false,
 		);
-
-    // sql语句
+    // 完整sql语句
     private $sql = '';
     // 语句拼装
     private $parts = array();
-    
     //解析数组
     private $_partsInit = array('distinct','field','union','table','where','group','having','order','limit','offset','lock');
-
+    // 要查询表名称
     public  $truetable;
 
 	public function __construct($config){
+        //检测配置文件
         $this->_checkRequiredOptions($config);
 		$this->config = $config;
 	}
@@ -139,8 +138,7 @@ class Db_Pdo extends Driver{
 	/**
      * 查找记录
      * @access public
-     * @param array $options 表达式
-     * @return mixed
+     * @return 结果集
      */
     
     public function select() {
@@ -156,14 +154,15 @@ class Db_Pdo extends Driver{
      */
 
     public function where($where) {
+        // 判断where条件是否为空
         if(empty($where)){
             return $where;
         }
-
+        // 如果不是数组转换成数组
         if(!is_array($where)){
             $where = array($where);
         }
-
+        // 处理where语句
         foreach ($where as $key => &$val) {
             if(is_numeric($key)){
                 $val = (string)$val;
@@ -172,6 +171,7 @@ class Db_Pdo extends Driver{
             }
             $val = '(' . $val . ')';
         }
+        // 多条件合并where语句
         $where = implode(' AND ', $where);
         $this->parts['where'] = ' WHERE '.$where;
     }
@@ -179,7 +179,8 @@ class Db_Pdo extends Driver{
     /**
      * 解析where特殊参数
      * @access public
-     * @param  array  $bind      参数
+     * @param  string        $key   
+     * @param  string|array  $val     
      */
 
     private function _where($key,$val){
@@ -222,7 +223,6 @@ class Db_Pdo extends Driver{
     /**
      * 解析distinct参数
      * @access public
-     * @param  array  $bind      参数
      */
 
     public function distinct(){
@@ -232,7 +232,7 @@ class Db_Pdo extends Driver{
     /**
      * 解析field参数
      * @access public
-     * @param  array  $bind      参数
+     * @param  array|string  $fields  字段参数
      */
 
     public function field($fields){
@@ -247,7 +247,7 @@ class Db_Pdo extends Driver{
     /**
      * 解析order方法
      * @access public
-     * @param  array  $bind      参数
+     * @param  string  $order  排序字符串
      */
 
     public function order($order){
@@ -263,25 +263,10 @@ class Db_Pdo extends Driver{
     }
 
     /**
-     * 安全过滤
-     * @access public
-     * @param  array  $bind      参数
-     */
-
-    private function _quote($value)
-    {
-        if (is_int($value)) {
-            return $value;
-        } elseif (is_float($value)) {
-            return sprintf('%F', $value);
-        }
-        return "'" . addcslashes($value, "\000\n\r\\'\"\032") . "'";
-    }
-
-    /**
      * 解析limit方法
      * @access public
-     * @param  array  $bind      参数
+     * @param  int      $count  
+     * @param  int      $offset    
      */
 
     public function limit($count,$offset=0) {
@@ -306,7 +291,6 @@ class Db_Pdo extends Driver{
     /**
      * 获取table表
      * @access public
-     * @param  array  $bind      参数
      */
 
     public function getTable(){
@@ -317,7 +301,6 @@ class Db_Pdo extends Driver{
     /**
      * 解析select语句
      * @access public
-     * @param  array  $bind      参数
      */
 
     private function selectSql(){
@@ -338,7 +321,7 @@ class Db_Pdo extends Driver{
 	/**
      * 执行查询 
      * @access public
-     * @param  string    $str  sql指令
+     * @param  string    $sql  sql指令
      * @param  boolean   $bind 执行参数
      */
 
@@ -362,7 +345,7 @@ class Db_Pdo extends Driver{
     /**
      * 获取结果集
      * @access public
-     * @param  array  $bind      参数
+     * @return array   结果集
      */
 
     public function getAll(){
@@ -450,17 +433,6 @@ class Db_Pdo extends Driver{
 
     public function close() {
         $this->_linkID = null;
-    }
-
-    /**
-     * SQL指令安全过滤
-     * @access public
-     * @param string $str  SQL字符串
-     * @return string
-     */
-
-    public function escapeString($str) {
-        return addslashes($str);
     }
 
     /**

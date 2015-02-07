@@ -15,3 +15,13 @@
 4. 提交您的改动 (`git commit -am 'Added some feature'`)
 5. 将您的改动记录提交到远程 git 仓库 (`git push origin my-new-feature`)
 6. 然后到 github 网站的该 git 远程仓库的 `my-new-feature` 分支下发起 Pull Request
+
+
+##Library
+
+	Register.php 	注册服务
+	Model.php	 	模型服务
+	Driver.php		数据库抽象驱动
+	Database.php	单态模式的数据库实例化方法
+	Db\Pdo.php		PDO驱动
+	Db\Mysql.php	Mysql驱动		
