@@ -91,7 +91,7 @@ class Model{
      * @return result
      */
 
-	public function findOne(){
+	public function select(){
 		$result = $this->db->select();
 		return $result;
 	}

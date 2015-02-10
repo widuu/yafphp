@@ -93,7 +93,7 @@ abstract class Driver{
      * @param  array  $bind      参数
      */
 
-    private function _quote($value)
+    protected function _quote($value)
     {
         if (is_int($value)) {
             return $value;
