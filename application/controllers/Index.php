@@ -15,9 +15,10 @@ class IndexController extends Yaf\Controller_Abstract{
 	public function indexAction(){
 		$this->_view->title = "YAF测试首页";
 		$model = new UserModel();
-		$map['username'] = 'xiaowei';
-		$map['id'] = array('gt',1);
-		$result = $model->field('username,password')->where($map)->order('id')->findOne();
-		dump($result);
+		$data = $model->where('status=1')->update($map);		
+	}
+
+	public function showAction(){
+		Yaf\Dispatcher::getInstance()->disableView();
 	}
 }

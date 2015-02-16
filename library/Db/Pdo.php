@@ -120,7 +120,8 @@ class Db_Pdo extends Driver{
 
 	public function getFields($tableName){
 		$sql    = 'SHOW COLUMNS FROM `'.$tableName.'`';
-		$result = $this->query($sql);
+		$this->query($sql);
+        $result = $this->getAll();
 		$info   =   array();
 		foreach ($result as $key => $val) {
 			$info[$val['field']] = array(
@@ -134,6 +135,36 @@ class Db_Pdo extends Driver{
 		}
 		return $info;
 	}
+
+    /**
+     * 插入数据
+     * @param  array $data 数据关联数组
+     * @access public
+     */
+
+    public function insert($data){
+        $sql = "INSERT INTO `$this->truetable` (`".join(array_keys($data),'`,`')."`) VALUES (:".join(array_keys($data),',:').")";
+        $this->query($sql,$data);
+        return $this->_linkID->lastInsertId();
+    }
+
+    /**
+     * 更新数据表
+     * @param  array $info 数据关联数组
+     * @access public
+     */
+
+    public function update($info){
+        $args = array();
+        foreach ($info as $k => $v) {
+           $args [] = "`$k`=:$k";
+        }
+        $where = $this->parts['where'];
+        if(empty($where)) new Yaf\Exception("not exists where method");
+        $sql = "UPDATE `$this->truetable` SET ".join($args,',').$where;
+        $this->query($sql,$info);
+        return $this->PDOStatement->rowCount();
+    }
 
 	/**
      * 查找记录
@@ -309,6 +340,8 @@ class Db_Pdo extends Driver{
             return false;
         }
         $SQL = "SELECT ";
+        //字段为空
+        if(!isset($this->parts['field'])) $SQL .= " * ";
         foreach ($this->_partsInit as $parts) {
             if(isset($this->parts[$parts])){
                 $SQL .= $this->parts[$parts];

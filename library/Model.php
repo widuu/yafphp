@@ -69,7 +69,7 @@ class Model{
 		$this->db = $this->_db[$linkNum];
 	}
 
-	public function getFields(){
+	public function getFields(){ 
 		return $this->db->getFields($this->tableName);
 	}
 
@@ -83,6 +83,32 @@ class Model{
 		$this->db->limit(1);
 		$result = $this->db->select();
 		return $result;
+	}
+
+	/**
+     * 插入数据
+     * @access public
+     * @return lastid
+     */
+
+	public function add($array){
+		if(!is_array($array)){
+			new Yaf\Exception("数据类型不对");
+		}
+		return $this->db->insert($array);
+	}
+
+	/**
+     * 更新数据
+     * @access public
+     * @return lastid
+     */
+
+	public function update($array){
+		if(!is_array($array)){
+			new Yaf\Exception("数据类型不对");
+		}
+		return $this->db->update($array);
 	}
 
 	/**

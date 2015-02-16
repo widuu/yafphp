@@ -40,6 +40,10 @@ class Bootstrap extends Yaf\Bootstrap_Abstract{
 		//注册配置文件
 		 $config = Yaf\Application::app()->getConfig();
          Yaf\Registry::set("config", $config);
+         //开启缓存
+         if($config->application->cache->open){
+         	Register::_set('cache',Cache::getInstance());
+         }
 	}
 
 	/**
