@@ -166,6 +166,21 @@ class Db_Pdo extends Driver{
         return $this->PDOStatement->rowCount();
     }
 
+    /**
+     * 删除数据
+     * @param  数据关联数组
+     * @access public
+     */
+
+    public function delete(){
+        $this->getTable();
+        $where =  $this->parts['where'];
+        if(empty($where)) new Yaf\Exception("not exists where method");
+        $sql = "DELETE ".$this->parts['table']. $this->parts['where'];
+        $this->query($sql); 
+        return $this->PDOStatement->rowCount();
+    }
+
 	/**
      * 查找记录
      * @access public

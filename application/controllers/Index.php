@@ -15,7 +15,11 @@ class IndexController extends Yaf\Controller_Abstract{
 	public function indexAction(){
 		$this->_view->title = "YAF测试首页";
 		$model = new UserModel();
-		$data = $model->where('status=1')->update($map);		
+		if(empty(cache('data'))){
+			$data = $model->where('status=1')->select();
+			cache('data',$data);
+		}	
+		dump(cache('data'));
 	}
 
 	public function showAction(){

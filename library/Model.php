@@ -112,6 +112,16 @@ class Model{
 	}
 
 	/**
+     * 插入数据
+     * @access public
+     * @return lastid
+     */
+
+	public function delete(){
+		return $this->db->delete();
+	}
+
+	/**
      * 返回所有的结果集
      * @access public
      * @return result

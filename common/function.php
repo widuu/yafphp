@@ -54,3 +54,13 @@ function Lang($name=''){
 function Error($message,$code='1000'){
     throw new Yaf\Exception($message,$code);
 }
+
+function cache($name,$value = null){
+    $cache = Register::_get('cache');
+    if( null != $value){
+        $cache->set($name,$value);
+    }else{
+        return $cache->get($name);
+    }
+   
+}

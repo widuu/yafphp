@@ -23,14 +23,14 @@ class Cache_Yac extends Cache{
 	}
 
 	public function set($name,$args,$ttl = null){
-		if(isset($ttl) && is_numeric($ttl)){
-			$this->handler->set($name,$args,$ttl);
+		if(null != $ttl  && is_numeric($ttl)){
+			$this->handler->set(md5($name),$args,$ttl);
 		}
-		$this->handler->set($name,$args);
+		$this->handler->set(md5($name),$args);
 	}
 
 	public function get($name){
-		$data = $this->handler->get($name);
+		$data = $this->handler->get(md5($name));
 		if(!$data) $data = '';
 		return $data;
 	}
